@@ -4,7 +4,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 use Longman\TelegramBot\Request;
 
-// Add you bot's API key and name
+// Add your bot's API key and name
 $bot_api_key  = 'ITS_A_SECRET';
 $bot_username = 'OSMdeWikiBot';
 
@@ -79,7 +79,7 @@ function resolveLinks($text) {
 	global $pref_lang;
 	$returntext = "";
 	// Possible matches for other wiki-objects:
-	// Q1234 :   Wikidata of openstreetmap.org
+	// Q1234   : Wikidata of openstreetmap.org
 	// W:Q1234 : wikidata.org
 	// [[Tag]] : wiki.openstreetmap.org without pre-processing
 	// [[W:A]] : <preferredLanguage>.wikipedia.org
@@ -114,29 +114,19 @@ function resolveLinks($text) {
 		}
 		$this_link = "";
 		if ($page != "") {
-			$this_link = "(" . $wiki . "/wiki/" . str_replace("+", "_", urlencode($page)) . 
+			$this_link = "(" . $wiki . "/wiki/" . str_replace(Array("%2f", "%2F", "+"), Array("/", "/", "_"), urlencode($page)) . 
 				($matches[4][$match_num] != "" ? $matches[4][$match_num] : "") . 
 				")";
 		}
 		if ($page != "" && strpos($returntext, $this_link) === false) {
 			$returntext .= 
-				($returntext != "" ? "\n" : "") . 
-				str_replace(
-					Array("=", "*", "[", "]", "#", "_"), 
-					Array("\\=", "\\*", "\\[", "\\]", "\\#", "\\_"), 
-					$matches[0][$match_num]
-				) . 
-				" \(" . $src . "\) : [" . 
-				str_replace(
-					Array("=", "*", "[", "]", "#", "_"), 
-					Array("\\=", "\\*", "\\[", "\\]", "\\#", "\\_"), 
-					$page
-				) . 
-				"]" . $this_link;
+				($returntext != "" ? "\n" : "") .
+				buildMarkdownLine($matches[0][$match_num], $page, $this_link, $src);
 		}
 	}
 	return $returntext;
 }
+
 function resolveOSMWikiLinks($text) {
 	global $pref_lang;
 	$wiki = "wiki.openstreetmap.org";
@@ -168,27 +158,34 @@ function resolveOSMWikiLinks($text) {
 
 		$this_link = "";
 		if ($page != "") {
-			$this_link = "(" . $wiki . "/wiki/".str_replace("+", "_", urlencode($page)) . ")";
+			$this_link = "(" . $wiki . "/wiki/" . str_replace(Array("%2f", "%2F", "+"), Array("/", "/", "_"), urlencode($page)) . ")";
 		}
 		if ($page != "" && strpos($returntext, $this_link) === false) {
 			$returntext .= 
 				($returntext != "" ? "\n" : "") . 
-				str_replace(
-					Array("=", "*", "[", "]", "#", "_"), 
-					Array("\\=", "\\*", "\\[", "\\]", "\\#", "\\_"), 
-					$matches[0][$match_num]
-				) . 
-				": [" . 
-				str_replace(
-					Array("=", "*", "[", "]", "#", "_"), 
-					Array("\\=", "\\*", "\\[", "\\]", "\\#", "\\_"), 
-					$page
-				) . 
-				"]" . $this_link;
+				buildMarkdownLine($matches[0][$match_num], $page, $this_link);
 		}
 	}
 	return $returntext;
 }
+
+function buildMarkdownLine($title, $page, $link, $src = null) {
+	return 
+		str_replace(
+			Array("=", "*", "[", "]", "#", "_"), 
+			Array("\\=", "\\*", "\\[", "\\]", "\\#", "\\_"), 
+			$title
+		) . 
+		($src != null ? " \(" . $src . "\)" : "").
+		": [" . 
+		str_replace(
+			Array("=", "*", "[", "]", "#", "_"), 
+			Array("\\=", "\\*", "\\[", "\\]", "\\#", "\\_"), 
+			$page
+		) . 
+		"]" . $link;
+}
+
 function wikiApiGetPage($wiki, $query) {
 	global $pref_lang;
 	// Use MediaWiki API to check if the title exists or
