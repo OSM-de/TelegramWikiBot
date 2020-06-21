@@ -94,12 +94,12 @@ function resolveLinks($text) {
 		}
 		if ($matches[7][$match_num] != "" && $matches[6][$match_num] == "") {
 			$wiki = "wiki.openstreetmap.org";
-			$title = $matches[7][$match_num];
+			$title = str_replace(" ", "_", $matches[7][$match_num]);
 			$src = "OSM Wiki";
 		}
 		if ($matches[7][$match_num] != "" && $matches[6][$match_num] == "W:") {
 			$wiki = $pref_lang . ".wikipedia.org";
-			$title = $matches[7][$match_num];
+			$title = str_replace(" ", "_", $matches[7][$match_num]);
 			$src = "Wikipedia " . strtoupper($pref_lang);
 		}
 		$page = wikiApiGetPage($wiki, $title);
@@ -113,13 +113,17 @@ function resolveLinks($text) {
 			$returntext .= 
 				($returntext != "" ? "\n" : "") . 
 				str_replace(
-					Array("=", "*", "[", "]", "#"), 
-					Array("\\=", "\\*", "\\[", "\\]", "\\#"), 
+					Array("=", "*", "[", "]", "#", "_"), 
+					Array("\\=", "\\*", "\\[", "\\]", "\\#", "\\_"), 
 					$matches[0][$match_num]
 				) . 
 				" \(" . $src . "\) : [" . 
-				str_replace("=", "\\=", $page) . 
-				"](" . $wiki . "/wiki/" . urlencode($page) . 
+				str_replace(
+					Array("=", "*", "[", "]", "#", "_"), 
+					Array("\\=", "\\*", "\\[", "\\]", "\\#", "\\_"), 
+					$page
+				) . 
+				"](" . $wiki . "/wiki/" . str_replace("+", "_", urlencode($page)) . 
 				($matches[4][$match_num] != "" ? $matches[4][$match_num] : "") . 
 				")";
 		}
@@ -159,13 +163,17 @@ function resolveOSMWikiLinks($text) {
 			$returntext .= 
 				($returntext != "" ? "\n" : "") . 
 				str_replace(
-					Array("=", "*"),
-					Array("\\=", "\\*"), 
+					Array("=", "*", "[", "]", "#", "_"), 
+					Array("\\=", "\\*", "\\[", "\\]", "\\#", "\\_"), 
 					$matches[0][$match_num]
 				) . 
 				": [" . 
-				str_replace("=", "\\=", $page) . 
-				"](" . $wiki . "wiki/".urlencode($page) . 
+				str_replace(
+					Array("=", "*", "[", "]", "#", "_"), 
+					Array("\\=", "\\*", "\\[", "\\]", "\\#", "\\_"), 
+					$page
+				) . 
+				"](" . $wiki . "/wiki/".str_replace("+", "_", urlencode($page)) . 
 				")";
 		}
 	}
