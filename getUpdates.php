@@ -48,7 +48,10 @@ try {
 		if (isset($this_message->entities)) {
 			foreach($this_message->entities as $ent) {
 				if ($ent->type == "code" || $ent->type == "pre") {
-					$send_text .= resolveOSMWikiLinks(substr($this_message->text, $ent->offset, $ent->length));
+					$this_resolved = resolveOSMWikiLinks(substr($this_message->text, $ent->offset, $ent->length));
+					if (strpos($send_text, $this_resolved) === false) {
+						$send_text .= ($send_text != "" ? "\n" : "") . $this_resolved;
+					}
 				}
 			}
 		}
@@ -109,7 +112,13 @@ function resolveLinks($text) {
 			$page = wikiApiGetPage($wiki, $title);
 			$src = "Wikipedia EN";
 		}
+		$this_link = "";
 		if ($page != "") {
+			$this_link = "(" . $wiki . "/wiki/" . str_replace("+", "_", urlencode($page)) . 
+				($matches[4][$match_num] != "" ? $matches[4][$match_num] : "") . 
+				")";
+		}
+		if ($page != "" && strpos($returntext, $this_link) === false) {
 			$returntext .= 
 				($returntext != "" ? "\n" : "") . 
 				str_replace(
@@ -123,9 +132,7 @@ function resolveLinks($text) {
 					Array("\\=", "\\*", "\\[", "\\]", "\\#", "\\_"), 
 					$page
 				) . 
-				"](" . $wiki . "/wiki/" . str_replace("+", "_", urlencode($page)) . 
-				($matches[4][$match_num] != "" ? $matches[4][$match_num] : "") . 
-				")";
+				"]" . $this_link;
 		}
 	}
 	return $returntext;
@@ -158,8 +165,12 @@ function resolveOSMWikiLinks($text) {
 		// 4. Try : If lookup was Tag:... try with the Key only in standard language
 		if ($page == "")
 			$page = wikiApiGetPage($wiki, str_replace("Tag:", "Key:", substr($lookup, 0, strpos($lookup, "="))));
-		
+
+		$this_link = "";
 		if ($page != "") {
+			$this_link = "(" . $wiki . "/wiki/".str_replace("+", "_", urlencode($page)) . ")";
+		}
+		if ($page != "" && strpos($returntext, $this_link) === false) {
 			$returntext .= 
 				($returntext != "" ? "\n" : "") . 
 				str_replace(
@@ -173,8 +184,7 @@ function resolveOSMWikiLinks($text) {
 					Array("\\=", "\\*", "\\[", "\\]", "\\#", "\\_"), 
 					$page
 				) . 
-				"](" . $wiki . "/wiki/".str_replace("+", "_", urlencode($page)) . 
-				")";
+				"]" . $this_link;
 		}
 	}
 	return $returntext;
