@@ -1,0 +1,8 @@
+{
+    "name": "osm-de/telegramwikibot",
+    "type": "project",
+    "require": {
+        "php": ">=5.5",
+        "longman/telegram-bot": "*"
+    }
+}
