@@ -1,20 +1,13 @@
 <?php
 // Load composer
 require_once __DIR__ . '/vendor/autoload.php';
-
 use Longman\TelegramBot\Request;
 
-// Add your bot's API key and name
-$bot_api_key  = 'ITS_A_SECRET';
-$bot_username = 'OSMdeWikiBot';
+// Load config that shouldn't be sync'd to GitHub
+require_once __DIR__ . '/config.php';
 
 // Preferred Language
 $pref_lang    = 'de';
-
-// Define all IDs of admin users in this array (leave as empty array if not used)
-$admin_users = [
-	77720808
-];
 
 try {
 	// Initialize Bot core
