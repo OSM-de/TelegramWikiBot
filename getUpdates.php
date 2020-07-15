@@ -129,36 +129,40 @@ function resolveOSMWikiLinks($text) {
 	// Cleaning up if multiline text
 	$text = trim(str_replace(Array("\r","\n"), Array(" ", " "), $text));
 	// Match OSM-de specific tagging
-	preg_match_all("/([\w\d\:\_]*)=([^ +]*)/", $text, $matches);
+	preg_match_all("/([\w\d\:\_]*)=?([^ +]*)/", $text, $matches);
 	for($match_num = 0; $match_num < sizeof($matches[0]); $match_num++) {
+		$lookup = "";
 		// If value is empty lookup the key in the preferred language first
 		if (trim($matches[2][$match_num]) == "" || trim($matches[2][$match_num]) == "*") {
 			$lookup = "Key:" . urlencode($matches[1][$match_num]);
 		} else {
-			// if value is set lookup the key=value combination
-			$lookup = "Tag:" . urldecode($matches[0][$match_num]);
+			if (trim($matches[0][$match_num]) != "") {
+				// if value is set lookup the key=value combination
+				$lookup = "Tag:" . urldecode($matches[0][$match_num]);
+			}
 		}
-		
-		// 1. Try : Lookup with preferred language
-		$page = wikiApiGetPage($wiki, strtoupper($pref_lang) . ":" . $lookup);
-		// 2. Try : Lookup with standard language
-		if ($page == "")
-			$page = wikiApiGetPage($wiki, $lookup);
-		// 3. Try : If lookup was Tag:... try with the Key only in preferred language
-		if ($page == "")
-			$page = wikiApiGetPage($wiki, strtoupper($pref_lang) . ":" . str_replace("Tag:", "Key:", substr($lookup, 0, strpos($lookup, "="))));
-		// 4. Try : If lookup was Tag:... try with the Key only in standard language
-		if ($page == "")
-			$page = wikiApiGetPage($wiki, str_replace("Tag:", "Key:", substr($lookup, 0, strpos($lookup, "="))));
+		if ($lookup != "") {
+			// 1. Try : Lookup with preferred language
+			$page = wikiApiGetPage($wiki, strtoupper($pref_lang) . ":" . $lookup);
+			// 2. Try : Lookup with standard language
+			if ($page == "")
+				$page = wikiApiGetPage($wiki, $lookup);
+			// 3. Try : If lookup was Tag:... try with the Key only in preferred language
+			if ($page == "")
+				$page = wikiApiGetPage($wiki, strtoupper($pref_lang) . ":" . str_replace("Tag:", "Key:", substr($lookup, 0, strpos($lookup, "="))));
+			// 4. Try : If lookup was Tag:... try with the Key only in standard language
+			if ($page == "")
+				$page = wikiApiGetPage($wiki, str_replace("Tag:", "Key:", substr($lookup, 0, strpos($lookup, "="))));
 
-		$this_link = "";
-		if ($page != "") {
-			$this_link = "(" . $wiki . "/wiki/" . str_replace(Array("%2f", "%2F", "+"), Array("/", "/", "_"), urlencode($page)) . ")";
-		}
-		if ($page != "" && strpos($returntext, $this_link) === false) {
-			$returntext .= 
-				($returntext != "" ? "\n" : "") . 
-				buildMarkdownLine($matches[0][$match_num], $page, $this_link);
+			$this_link = "";
+			if ($page != "") {
+				$this_link = "(" . $wiki . "/wiki/" . str_replace(Array("%2f", "%2F", "+"), Array("/", "/", "_"), urlencode($page)) . ")";
+			}
+			if ($page != "" && strpos($returntext, $this_link) === false) {
+				$returntext .= 
+					($returntext != "" ? "\n" : "") . 
+					buildMarkdownLine($matches[0][$match_num], $page, $this_link);
+			}
 		}
 	}
 	return $returntext;
