@@ -72,7 +72,7 @@ function resolveLinks($text) {
 	global $pref_lang;
 	$returntext = "";
 	// Possible matches for other wiki-objects:
-	// Q1234   : Wikidata of openstreetmap.org
+	// Q1234   : DataItems of openstreetmap.org
 	// W:Q1234 : wikidata.org
 	// [[Tag]] : wiki.openstreetmap.org without pre-processing
 	// [[W:A]] : <preferredLanguage>.wikipedia.org
@@ -81,7 +81,7 @@ function resolveLinks($text) {
 		if ($matches[3][$match_num] != "" && $matches[2][$match_num] == "") {
 			$wiki = "wiki.openstreetmap.org";
 			$title = "Item:Q" . $matches[3][$match_num];
-			$src = "OSM WikiData";
+			$src = "OSM DataItems";
 		}
 		if ($matches[3][$match_num] != "" && $matches[2][$match_num] == "W:") {
 			$wiki = "wikidata.org";
