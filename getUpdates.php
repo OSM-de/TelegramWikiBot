@@ -169,7 +169,7 @@ function resolveOSMWikiLinks($text) {
 }
 
 function buildMarkdownLine($title, $page, $link, $src = null) {
-	return 
+	if (trim($title) != "") return 
 		str_replace(
 			Array("=", "*", "[", "]", "#", "_"), 
 			Array("\\=", "\\*", "\\[", "\\]", "\\#", "\\_"), 
