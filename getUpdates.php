@@ -51,6 +51,8 @@ try {
 		
 		// Get other wiki links
 		$send_text .= ($send_text != "" ? "\n" : "") . resolveLinks($this_message->text);
+		// Clean up line breaks
+		$send_text = preg_replace("/[\r?\n]+/", "\n", $send_text);
 
 		// sending the result back to the chat
 		$send_result = Request::sendMessage([
