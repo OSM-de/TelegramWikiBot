@@ -151,7 +151,7 @@ function resolveLinks($text) {
 				buildMarkdownLine($matches[0][$match_num], $page, $this_link, $src);
 		}
 	}
-	preg_match_all("/([CNWR])\#(\d+)/i", $text, $matches);
+	preg_match_all("/([CNWR])[\#\/](\d+)/i", $text, $matches);
 	$link_abbr = Array("C" => "Changeset", "N" => "Node", "W" => "Way", "R" => "Relation");
 	for($match_num = 0; $match_num < sizeof($matches[0]); $match_num++) {
 		$title = getNWRInfo(strtolower($link_abbr[strtoupper($matches[1][$match_num])]), $matches[2][$match_num]);
