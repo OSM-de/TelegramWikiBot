@@ -22,7 +22,7 @@ try {
 	$telegram->useGetUpdatesWithoutDatabase();
 	$server_response = $telegram->handle();
 	$entityBody = file_get_contents('php://input');
-
+	
 	if ($server_response) {
 		$send_text = "";
 		$this_update = json_decode($entityBody);
@@ -251,24 +251,28 @@ function wikiApiGetPage($wiki, $query) {
 function getNWRInfo($type, $id) {
 	$url = "https://api.openstreetmap.org/api/0.6/".$type."/".$id.".json";
 	$fc = file_get_contents($url);
-	$j = json_decode($fc);
-	$this_element = $j->elements[0];
-	if ($type != "changeset") {
-		$c_time = strtotime($this_element->timestamp);
-		$dt = new DateTime("@$c_time");
-		$dtp = strval($dt->format("d\\\.m\\\.Y \\u\\m H:i:s"));
-		$title = "[" . strtoupper(substr($type, 0, 1)) . substr($type, 1) . " " .
-			(isset($this_element->tags->name) ? "\"" . replaceMarkdownCharacters($this_element->tags->name) . "\"" : $this_element->id) . 
-			"](https://osm.org/$type/$id), geändert am " . $dtp . " " .
-			"zu Version " . $this_element->version . " mit [Changeset " . $this_element->changeset . "](https://osm.org/changeset/{$this_element->changeset}) von " .
-			"Benutzer [".replaceMarkdownCharacters($this_element->user)."](https://osm.org/user/{$this_element->user}})";
+	if (in_array("HTTP/1.1 410 Gone", $http_response_header)) {
+		$title = strtoupper(substr($type, 0, 1)) . substr($type, 1) . " $id existiert nicht \(mehr\)";
 	} else {
-		$c_time = strtotime($this_element->created_at);
-		$dt = new DateTime("@$c_time");
-		$dtp = strval($dt->format("d\\\.m\\\.Y \\u\\m H:i:s"));
-		$title = "[Changeset " . $this_element->id . "](https://osm.org/changeset/$id) " . 
-			"erstellt von Benutzer [".replaceMarkdownCharacters($this_element->user)."](https://osm.org/user/{$this_element->user}}) ".
-			"am " . $dtp;
+		$j = json_decode($fc);
+		$this_element = $j->elements[0];
+		if ($type != "changeset") {
+			$c_time = strtotime($this_element->timestamp);
+			$dt = new DateTime("@$c_time");
+			$dtp = strval($dt->format("d\\\.m\\\.Y \\u\\m H:i:s"));
+			$title = "[" . strtoupper(substr($type, 0, 1)) . substr($type, 1) . " " .
+				(isset($this_element->tags->name) ? "\"" . replaceMarkdownCharacters($this_element->tags->name) . "\"" : $this_element->id) . 
+				"](https://osm.org/$type/$id), geändert am " . $dtp . " " .
+				"zu Version " . $this_element->version . " mit [Changeset " . $this_element->changeset . "](https://osm.org/changeset/{$this_element->changeset}) von " .
+				"Benutzer [".replaceMarkdownCharacters($this_element->user)."](https://osm.org/user/{$this_element->user}})";
+		} else {
+			$c_time = strtotime($this_element->created_at);
+			$dt = new DateTime("@$c_time");
+			$dtp = strval($dt->format("d\\\.m\\\.Y \\u\\m H:i:s"));
+			$title = "[Changeset " . $this_element->id . "](https://osm.org/changeset/$id) " . 
+				"erstellt von Benutzer [".replaceMarkdownCharacters($this_element->user)."](https://osm.org/user/{$this_element->user}}) ".
+				"am " . $dtp;
+		}
 	}
 	return $title;
 }
